@@ -3,6 +3,7 @@ general:
   reload: '<gray>Successfully reloaded the plugin.'
   player-not-found: '<red><player> was not found.'
   only-players: '<red>Only players can execute this command.'
+  wrong-time-format: '<red>Wrong time format! Use 2s, 2m, 2h, 2d, permanent ...'
 permission:
   group-already-exists: '<red>A group with this name already exists.'
   group-created: '<gray>Successfully created the group <blue><group>'
@@ -35,6 +36,9 @@ permission:
   user-group-added: '<gray>Successfully added <blue><player> <gray>to group <blue><group>. <gray><temporary> <gray>(expires: <blue><expiration>)>'
   user-group-already-added: '<red><player> is already in group <blue><group>.'
   user-group-removed: '<gray>Successfully removed <blue><player> <gray>from group <blue><group>.'
+  user-group-removed-default: '<red>Cannot remove the default group!'
+  user-group-add-default: '<red>You cannot add the default group to players!'
+  user-group-add-already-perm: '<red><player> has already <group> permanently.'
   user-not-in-group: '<red><player> is not in group <blue><group>.'
   user-info:
     - '  <gray>---[<blue>LegendPerms User Info <gray>]---'

@@ -357,14 +357,30 @@ public final class LegendPermissionService implements PermissionResolver {
     }
 
     public boolean userRemoveGroup(UUID uuid, String groupName) {
-        LegendUser user = users.computeIfAbsent(uuid, LegendUser::new);
-        boolean changed = user.getGroups().remove(groupName);
+        if (uuid == null || groupName == null || groupName.isBlank()) return false;
 
-        if (changed) {
-            if (repository != null) {
+        LegendUser user = users.computeIfAbsent(uuid, LegendUser::new);
+        // check if the temp group already expired
+        purgeExpiredTemporaryGroups(user);
+
+        boolean removedPermanent = user.getGroups().removeIf(group -> group != null && group.equalsIgnoreCase(groupName));
+        boolean removedTemporary = user.getTemporaryGroups().keySet()
+                .removeIf(group -> group != null && group.equalsIgnoreCase(groupName));
+
+        boolean changed = removedPermanent || removedTemporary;
+
+        if (changed && repository != null) {
+            if (removedPermanent) {
                 repository.removeUserGroup(uuid, groupName)
                         .exceptionally(ex -> {
                             logger.warning("DB userRemoveGroup failed: " + ex);
+                            return null;
+                        });
+            }
+            if (removedTemporary) {
+                repository.deleteUserTempGroup(uuid, groupName)
+                        .exceptionally(ex -> {
+                            logger.warning("DB userRemoveTemporaryGroup (via removeGroup) failed: " + ex);
                             return null;
                         });
             }

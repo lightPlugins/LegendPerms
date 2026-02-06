@@ -69,6 +69,17 @@ public record UserBrigadierCommand(LegendPerms plugin) implements LegendSubComma
         if (target == null) return 0;
 
         String groupName = StringArgumentType.getString(ctx, "groupName");
+
+        if(groupName.equalsIgnoreCase("Default")) {
+            plugin.getMessageSender().sendChatMessage(
+                    sender,
+                    "permission.user-group-add-default",
+                    true,
+                    null
+            );
+            return 0;
+        }
+
         UUID uuid = target.getUniqueId();
 
         try {
@@ -94,7 +105,14 @@ public record UserBrigadierCommand(LegendPerms plugin) implements LegendSubComma
             );
             return changed ? 1 : 0;
         } catch (IllegalArgumentException ex) {
-            sender.sendMessage("Gruppe existiert nicht: " + groupName);
+            plugin.getMessageSender().sendChatMessage(
+                    sender,
+                    "permission.group-not-exists",
+                    true,
+                    TagResolver.resolver(
+                            Placeholder.parsed("group", groupName)
+                    )
+            );
             return 0;
         }
     }
@@ -210,19 +228,45 @@ public record UserBrigadierCommand(LegendPerms plugin) implements LegendSubComma
         if (target == null) return 0;
 
         String groupName = StringArgumentType.getString(ctx, "groupName");
+
+        if(groupName.equalsIgnoreCase("Default")) {
+            plugin.getMessageSender().sendChatMessage(
+                    sender,
+                    "permission.user-group-add-default",
+                    true,
+                    null
+            );
+            return 0;
+        }
+
         String raw = StringArgumentType.getString(ctx, "time");
 
         Duration d = parseDuration(raw);
         if (d == null) {
             sender.sendMessage("Ungültige Zeit: " + raw + " (Beispiele: 5s, 10m, 2h, 7d)");
+            plugin.getMessageSender().sendChatMessage(
+                    sender,
+                    "general.wrong-time-format",
+                    true,
+                    null
+            );
             return 0;
         }
 
         UUID uuid = target.getUniqueId();
 
-        // if the player has this group permanent -> cannot add it temporarily!
+        // if the player has this group permanently -> cannot add it temporarily!
         if (plugin.getPermissionService().userHasPermanentGroup(uuid, groupName)) {
-            sender.sendMessage("Spieler hat diese Gruppe bereits permanent: " + target.getName() + " -> " + groupName);
+
+            plugin.getMessageSender().sendChatMessage(
+                    sender,
+                    "permission.user-group-add-already-perm",
+                    true,
+                    TagResolver.resolver(
+                            Placeholder.parsed("group", groupName),
+                            Placeholder.parsed("player", target.getName())
+                    )
+            );
             return 0;
         }
 
@@ -264,6 +308,16 @@ public record UserBrigadierCommand(LegendPerms plugin) implements LegendSubComma
         if (target == null) return 0;
 
         String groupName = StringArgumentType.getString(ctx, "groupName");
+
+        if(groupName.equalsIgnoreCase("Default")) {
+            plugin.getMessageSender().sendChatMessage(
+                    sender,
+                    "permission.user-group-removed-default",
+                    true,
+                    null
+            );
+            return 0;
+        }
 
         boolean changed = plugin.getPermissionService().userRemoveGroup(target.getUniqueId(), groupName);
 

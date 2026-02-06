@@ -55,10 +55,15 @@ public final class TablistPrefixListener implements Listener {
 
     public void refreshTablistOrder(Player player) {
         if (player == null || !player.isOnline()) return;
+        // check if the sorting feature is enabled
+        if (!isRankSortingEnabled()) return;
         applySortingTeam(player);
     }
 
     private void applySortingTeam(Player player) {
+        // check if the sorting feature is enabled
+        if (!isRankSortingEnabled()) return;
+
         int prio = plugin.getPermissionService().getUserPrimaryPriority(player.getUniqueId());
 
         int bucket = TEAM_BUCKET_MAX - prio;
@@ -81,5 +86,9 @@ public final class TablistPrefixListener implements Listener {
         }
 
         team.addEntry(player.getName());
+    }
+
+    private boolean isRankSortingEnabled() {
+        return plugin.getSettingsFile().getBoolean("tablist.sort-players-by-ranks", true);
     }
 }

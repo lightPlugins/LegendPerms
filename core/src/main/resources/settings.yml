@@ -3,12 +3,35 @@ logging:
     enable: true
     level: 1
 
+########## Chat Settings ##########
+# You can use the complete AdventureAPI Syntax here
 chat:
-  format: "<prefix> <dark_gray>| <gray><name><reset> <dark_gray>» <gray><message>"
-  join-message: "<green><bold>▲ <reset><prefix><reset> <dark_gray>| <gray><name><reset> <dark_gray>» <gray>joined the server."
-  quit-message: "<red><bold>▼ <reset><prefix><reset> <dark_gray>| <gray><name><reset> <dark_gray>» <gray>left the server."
+  # The Chat format shown in the chat
+  # Placeholders: <prefix>, <name>, <message>, <group>
+  # Default Minecraft message format: '<white><<name>>: <message>'
+  format: '<prefix> <dark_gray>| <gray><hover:show_text:"<gray>Group: <blue><group><br><gray>Prefix:<prefix>"><name><reset> <dark_gray>» <gray><message>'
+
+  join-message:
+    # If set to false, the default join message will be used
+    enable: true
+    # The format of the join message
+    # Placeholders: <prefix>, <name>
+    message: <gray>『<green><bold>▲<reset><gray>』 <reset><prefix><reset> <dark_gray>| <gray><name><reset> <dark_gray>» <green>joined the server.
+
+  quit-message:
+    # If set to false, the default quit message will be used
+    enable: true
+    # The format of the quit message
+    # Placeholders: <prefix>, <name>
+    message: <gray>『<red><bold>▼<reset><gray>』 <reset><prefix><reset> <dark_gray>| <gray><name><reset> <dark_gray>» <red>left the server.
+
+########## Tablist Settings ##########
+# You can use the complete AdventureAPI Syntax here
 tablist:
-  name-format: "<prefix> <white><name>"
+  # The playername format shown in the tablist
+  # Placeholders: <prefix>, <name>
+  name-format: <prefix> <white><name>
+  sort-players-by-ranks: true
 
 storage:
   # possible values:

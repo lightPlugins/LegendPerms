@@ -19,8 +19,11 @@ public record JoinLeaveListener(LegendPerms plugin) implements Listener {
     @EventHandler
     public void onPrintJoinMessage(PlayerJoinEvent e) {
 
+        boolean enable = plugin.getSettingsFile().getBoolean("chat.join-message.enable", true);
+        if(!enable) return;
+
         String newJoinMessageRaw = plugin.getSettingsFile().
-                getString("chat.join-message", "<yellow><name> joined the server.");
+                getString("chat.join-message.message", "<yellow><name> joined the server.");
 
         LegendGroup group = getGroup(e.getPlayer().getUniqueId());
         if(group == null) return;
@@ -38,8 +41,11 @@ public record JoinLeaveListener(LegendPerms plugin) implements Listener {
     @EventHandler
     public void onPrintQuitMessage(PlayerQuitEvent e) {
 
+        boolean enable = plugin.getSettingsFile().getBoolean("chat.quit-message.enable", true);
+        if(!enable) return;
+
         String newQuitMessageRaw = plugin.getSettingsFile().
-                getString("chat.quit-message", "<yellow><name> left the server.");
+                getString("chat.quit-message.message", "<yellow><name> left the server.");
 
         LegendGroup group = getGroup(e.getPlayer().getUniqueId());
 
