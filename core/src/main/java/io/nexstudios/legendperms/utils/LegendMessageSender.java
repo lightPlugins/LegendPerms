@@ -35,8 +35,9 @@ public record LegendMessageSender(LegendLanguage language, LegendLogger logger) 
         if (sender instanceof Player player) {
             UUID playerUUID = player.getUniqueId();
 
+            // exclude prefix if the message is a List<String>!
             if (isListPath(playerUUID, configPath)) {
-                List<Component> components = language.getTranslationList(playerUUID, configPath, withPrefix, safeResolver);
+                List<Component> components = language.getTranslationList(playerUUID, configPath, false, safeResolver);
                 for (Component component : components) {
                     player.sendMessage(component);
                 }
@@ -50,6 +51,7 @@ public record LegendMessageSender(LegendLanguage language, LegendLogger logger) 
 
         UUID consoleUUID = language.getConsoleUUID();
 
+        // consoles never get the prefix, because the logger has his own prefix!
         if (isListPath(consoleUUID, configPath)) {
             List<Component> components = language.getTranslationList(consoleUUID, configPath, false, safeResolver);
             for (Component component : components) {
