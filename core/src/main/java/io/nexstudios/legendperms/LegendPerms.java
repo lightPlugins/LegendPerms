@@ -1,6 +1,7 @@
 package io.nexstudios.legendperms;
 
 import com.zaxxer.hikari.HikariDataSource;
+import io.nexstudios.legendperms.listener.JoinLeaveListener;
 import io.nexstudios.legendperms.listener.PrefixChatListener;
 import io.nexstudios.legendperms.listener.TablistPrefixListener;
 import io.nexstudios.legendperms.commands.BrigadierRootCommand;
@@ -138,6 +139,7 @@ public class LegendPerms extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new PrefixChatListener(this), this);
         this.tablistPrefixListener = new TablistPrefixListener(this);
         Bukkit.getPluginManager().registerEvents(this.tablistPrefixListener, this);
+        Bukkit.getPluginManager().registerEvents(new JoinLeaveListener(this), this);
     }
 
     private void initPermissionSystem() {

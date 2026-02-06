@@ -22,7 +22,12 @@ public record PrefixChatListener(LegendPerms plugin) implements Listener {
 
             String prefixRaw = plugin.getPermissionService().getUserPrimaryPrefix(source.getUniqueId());
             if (prefixRaw == null || prefixRaw.isBlank()) {
-                prefixRaw = "";
+                prefixRaw = "<red>NotDefined";
+            }
+
+            String primaryGroup = plugin.getPermissionService().getUserPrimaryGroupName(source.getUniqueId());
+            if (primaryGroup == null || primaryGroup.isBlank()) {
+                primaryGroup = "<red>NotFound";
             }
 
             Component prefixComponent = prefixRaw.isBlank()
@@ -31,8 +36,15 @@ public record PrefixChatListener(LegendPerms plugin) implements Listener {
                     .deserialize(prefixRaw)
                     .decoration(TextDecoration.ITALIC, false);
 
+            Component groupComponent = prefixRaw.isBlank()
+                    ? Component.empty()
+                    : MiniMessage.miniMessage()
+                    .deserialize(primaryGroup)
+                    .decoration(TextDecoration.ITALIC, false);
+
             TagResolver resolver = TagResolver.resolver(
                     Placeholder.component("prefix", prefixComponent),
+                    Placeholder.component("group", groupComponent),
                     Placeholder.parsed("name", source.getName()),
                     Placeholder.component("message", message)
             );

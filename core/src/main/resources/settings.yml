@@ -4,7 +4,9 @@ logging:
     level: 1
 
 chat:
-  format: "<prefix> <gray><name><reset>: <message>"
+  format: "<prefix> <dark_gray>| <gray><name><reset> <dark_gray>» <gray><message>"
+  join-message: "<green><bold>▲ <reset><prefix><reset> <dark_gray>| <gray><name><reset> <dark_gray>» <gray>joined the server."
+  quit-message: "<red><bold>▼ <reset><prefix><reset> <dark_gray>| <gray><name><reset> <dark_gray>» <gray>left the server."
 tablist:
   name-format: "<prefix> <white><name>"
 
