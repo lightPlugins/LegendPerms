@@ -140,18 +140,25 @@ public record GroupBrigadierCommand(LegendPerms plugin) implements LegendSubComm
 
                                 .then(Commands.literal("permission")
                                         .then(Commands.literal("set")
-                                                .then(Commands.argument("node", StringArgumentType.word())
-                                                        .suggests(this::suggestPermissionNodePlaceholder)
-                                                        .then(Commands.literal("allow")
+                                                .then(Commands.literal("allow")
+                                                        // greedyString for .* permission nodes
+                                                        .then(Commands.argument("node", StringArgumentType.greedyString())
+                                                                .suggests(this::suggestPermissionNodePlaceholder)
                                                                 .executes(ctx ->
-                                                                        setGroupPermission(ctx, PermissionDecision.ALLOW)))
-                                                        .then(Commands.literal("deny")
+                                                                        setGroupPermission(ctx, PermissionDecision.ALLOW))
+                                                        )
+                                                )
+                                                .then(Commands.literal("deny")
+                                                        // greedyString for .* permission nodes
+                                                        .then(Commands.argument("node", StringArgumentType.greedyString())
+                                                                .suggests(this::suggestPermissionNodePlaceholder)
                                                                 .executes(ctx ->
-                                                                        setGroupPermission(ctx, PermissionDecision.DENY)))
+                                                                        setGroupPermission(ctx, PermissionDecision.DENY))
+                                                        )
                                                 )
                                         )
                                         .then(Commands.literal("remove")
-                                                .then(Commands.argument("node", StringArgumentType.word())
+                                                .then(Commands.argument("node", StringArgumentType.greedyString())
                                                         .suggests(this::suggestExistingGroupPermissionNodes)
                                                         .executes(this::removeGroupPermission)
                                                 )
