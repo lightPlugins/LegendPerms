@@ -390,7 +390,16 @@ public record GroupBrigadierCommand(LegendPerms plugin) implements LegendSubComm
             return 0;
         }
 
-        sender.sendMessage("Permission gesetzt: " + groupName + " -> " + node + " = " + decision.name().toLowerCase());
+        plugin.getMessageSender().sendChatMessage(
+                sender,
+                "permission.group-permission-added",
+                true,
+                TagResolver.resolver(
+                        Placeholder.parsed("node", node),
+                        Placeholder.parsed("decision", decision.name().toLowerCase(Locale.ROOT)),
+                        Placeholder.parsed("group", groupName)
+                )
+        );
         return 1;
     }
 

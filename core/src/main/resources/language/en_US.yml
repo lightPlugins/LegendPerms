@@ -11,7 +11,7 @@ permission:
   group-deleted: '<gray>Successfully deleted the group <blue><group>'
   group-prefix-set: '<gray>Successfully set the prefix of <blue><group> <gray>to <prefix>.'
   group-permission-invalid-decision: '<red>Invalid decision <dark_red><decision><red>. Use <dark_red>allow<red> or <dark_red>deny<red>'
-  group-permission-added: '<gray>Successfully added permission <dark_gray><node> <gray>to <blue><group>.'
+  group-permission-added: '<gray>Successfully added permission <dark_gray><node> <gray>(<dark_gray><decision><gray>) <gray>to <blue><group>.'
   group-permission-not-found: '<red>Permission <dark_red><node> <red>was not found in the group <dark_red><group>.'
   group-permission-removed: '<gray>Successfully removed permission <dark_gray><node> <gray>from <blue><group>.'
   group-priority-set: '<gray>Successfully set the priority of <blue><group> <gray>to <dark_gray><priority>.'
