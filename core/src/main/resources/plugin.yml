@@ -1,0 +1,9 @@
+name: ${name}
+version: ${version}
+main: io.nexstudios.legendperms.LegendPerms
+api-version: '1.21'
+softdepend: [ ]
+depend: [ ]
+libraries:
+  - com.zaxxer:HikariCP:6.3.0
+  - org.mariadb.jdbc:mariadb-java-client:3.5.3

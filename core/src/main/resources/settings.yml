@@ -1,0 +1,32 @@
+logging:
+  debug:
+    enable: true
+    level: 1
+
+chat:
+  format: "<prefix> <gray><name><reset>: <message>"
+tablist:
+  name-format: "<prefix> <white><name>"
+
+storage:
+  # possible values:
+  # - sqlite -> using SQLite (recommended for most users) (single server setup)
+  # - mysql -> for a MySQL database
+  # - mariadb -> for a MariaDB database (recommended over MySQL)
+  type: sqlite
+  host: 127.0.0.1
+  port: 3306
+  database: databaseName
+  username: username
+  password: YourSecretPassword
+  advanced:
+    use-ssl: false
+    connection-timeout: 60000
+    idle-timeout: 600000
+    keep-alive-time: 0
+    max-life-time: 1800000
+    minimum-idle: 10
+    maximum-pool-size: 10
+    leak-detection-threshold: 0
+    connection-test-query: "SELECT 1"
+    character-encoding: "utf8"
