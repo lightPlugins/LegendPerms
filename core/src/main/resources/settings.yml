@@ -1,7 +1,18 @@
+########## Logging Settings ##########
+# Enable debug logging and their level
+# Higher levels mean more detailed logging
+# max level: 5
 logging:
   debug:
     enable: true
     level: 1
+
+########## Chat Settings ##########
+# The language used in the plugin
+# Available languages: en_US, de_DE
+# After change the language here, you have to use /lp reload
+language:
+  current: en_US
 
 ########## Chat Settings ##########
 # You can use the complete AdventureAPI Syntax here

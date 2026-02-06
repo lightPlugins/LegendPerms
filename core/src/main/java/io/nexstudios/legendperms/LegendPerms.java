@@ -1,13 +1,10 @@
 package io.nexstudios.legendperms;
 
 import com.zaxxer.hikari.HikariDataSource;
+import io.nexstudios.legendperms.commands.*;
 import io.nexstudios.legendperms.listener.JoinLeaveListener;
 import io.nexstudios.legendperms.listener.PrefixChatListener;
 import io.nexstudios.legendperms.listener.TablistPrefixListener;
-import io.nexstudios.legendperms.commands.BrigadierRootCommand;
-import io.nexstudios.legendperms.commands.GroupBrigadierCommand;
-import io.nexstudios.legendperms.commands.ReloadBrigadierCommand;
-import io.nexstudios.legendperms.commands.UserBrigadierCommand;
 import io.nexstudios.legendperms.database.AbstractDatabase;
 import io.nexstudios.legendperms.database.PooledDatabase;
 import io.nexstudios.legendperms.database.impl.MariaDatabase;
@@ -29,6 +26,7 @@ import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
 import java.util.List;
 
 @Getter
@@ -129,6 +127,7 @@ public class LegendPerms extends JavaPlugin {
         this.brigadierRootCommand.add(new ReloadBrigadierCommand(this));
         this.brigadierRootCommand.add(new GroupBrigadierCommand(this));
         this.brigadierRootCommand.add(new UserBrigadierCommand(this));
+        this.brigadierRootCommand.add(new LanguageBrigadierCommand(this));
 
         this.brigadierRootCommand.register();
     }
@@ -219,18 +218,32 @@ public class LegendPerms extends JavaPlugin {
 
     private void loadLegendFiles() {
         settingsFile = new LegendFile(this, "settings.yml", legendLogger, true);
-        // generate the default language file
+
+        String configuredDefaultLanguage = settingsFile.getString("language.current", "en_US");
+
+        // Default supported languages
         new LegendFile(this, "language/en_US.yml", legendLogger, true);
+        new LegendFile(this, "language/de_DE.yml", legendLogger, true);
+
+        // Generate configured language from jar ONLY if it exists as a bundled resource
+        if (configuredDefaultLanguage != null && !configuredDefaultLanguage.isBlank()) {
+            String lang = configuredDefaultLanguage.trim();
+            String path = "language/" + lang + ".yml";
+
+            if (!lang.equals("en_US") && getResource(path) != null) {
+                new LegendFile(this, path, legendLogger, true);
+            }
+        }
+
         legendLogger.setDebugEnabled(settingsFile.getBoolean("logging.debug.enabled", true));
         legendLogger.setDebugLevel(settingsFile.getInt("logging.debug.level", 3));
 
         legendLogger.info("Loading language system ...");
         languageFiles = new LegendFileReader("language", this);
-        language = new LegendLanguage(languageFiles, legendLogger);
+        language = new LegendLanguage(languageFiles, legendLogger, configuredDefaultLanguage);
 
         messageSender = new LegendMessageSender(language, legendLogger);
 
         legendLogger.info("All files have been loaded.");
-
     }
 }

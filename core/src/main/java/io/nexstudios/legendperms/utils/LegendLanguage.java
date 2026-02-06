@@ -11,29 +11,66 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.util.*;
+import java.util.regex.Pattern;
 
 @Getter
 public class LegendLanguage {
 
+    private static final Pattern LANGUAGE_TAG_PATTERN = Pattern.compile("^[a-z]{2}_[A-Z]{2}$");
     private final Map<UUID, String> userLanguage = new HashMap<>();
     private final Map<String, File> availableLanguages = new HashMap<>();
     private final Map<String, FileConfiguration> loadedLanguages = new HashMap<>();
     private final LegendFileReader rawLanguageFiles;
     private final LegendLogger logger;
+    private final String defaultLanguage;
+
     // The UUID of the console, used for logging and default language selection
     public UUID consoleUUID = UUID.fromString("c860b2fe-cdd1-4e76-9ce5-874a83c44bc7");
 
-    public LegendLanguage(LegendFileReader rawLanguageFiles, LegendLogger logger) {
+    public LegendLanguage(LegendFileReader rawLanguageFiles, LegendLogger logger, String configuredDefaultLanguage) {
         this.rawLanguageFiles = rawLanguageFiles;
         this.logger = logger;
 
         rawLanguageFiles.getFiles().forEach(file -> {
             String languageName = file.getName().replace(".yml", "");
+
+            if (!isValidLanguageTag(languageName)) {
+                logger.warning(List.of(
+                        "Ignoring invalid language file: " + file.getName(),
+                        "Expected ISO format like: en_US, de_DE"
+                ));
+                return;
+            }
+
             availableLanguages.put(languageName, file);
             loadedLanguages.put(languageName, YamlConfiguration.loadConfiguration(file));
         });
 
-        logger.info("Loaded " + availableLanguages.size() + " languages.");
+        String resolvedDefault = (configuredDefaultLanguage == null || configuredDefaultLanguage.isBlank())
+                ? "en_US"
+                : configuredDefaultLanguage.trim();
+
+        if (!isValidLanguageTag(resolvedDefault)) {
+            logger.error(List.of(
+                    "Configured default language '" + resolvedDefault + "' is invalid.",
+                    "Expected ISO format like: en_US, de_DE",
+                    "Falling back to en_US"
+            ));
+            resolvedDefault = "en_US";
+        }
+
+        if (!availableLanguages.containsKey(resolvedDefault)) {
+            logger.error(List.of(
+                    "Configured default language '" + resolvedDefault + "' does not exist in plugins/" + "LegendPerms" + "/language/",
+                    "Create plugins/LegendPerms/language/" + resolvedDefault + ".yml or select an existing language.",
+                    "Falling back to en_US"
+            ));
+            resolvedDefault = "en_US";
+        }
+
+        this.defaultLanguage = resolvedDefault;
+
+        logger.info("Loaded " + availableLanguages.size() + " languages. Default: " + this.defaultLanguage);
     }
 
     public FileConfiguration getSelectedLanguageConfig(UUID uuid) {
@@ -41,11 +78,11 @@ public class LegendLanguage {
     }
 
     public String getSelectedLanguage(UUID uuid) {
-        return userLanguage.getOrDefault(uuid, "en_US");
+        return userLanguage.getOrDefault(uuid, defaultLanguage);
     }
 
     public boolean hasPlayerDefaultLanguage(UUID uuid) {
-        return userLanguage.containsKey(uuid) && userLanguage.get(uuid).equals("en_US");
+        return userLanguage.containsKey(uuid) && userLanguage.get(uuid).equals(defaultLanguage);
     }
 
     public String getPrefix(UUID uuid) {
@@ -55,7 +92,7 @@ public class LegendLanguage {
         if (languageConfig == null) {
             logger.error(List.of(
                     "Language configuration for " + lang + " not found.",
-                    "Using default language: en_US"
+                    "Using fallback language: en_US"
             ));
             languageConfig = loadedLanguages.get("en_US");
         }
@@ -152,7 +189,7 @@ public class LegendLanguage {
 
         logger.error(List.of(
                 "Language configuration for " + lang + " not found.",
-                "Using default language: en_US"
+                "Using fallback language: en_US"
         ));
 
         FileConfiguration fallback = loadedLanguages.get("en_US");
@@ -168,9 +205,18 @@ public class LegendLanguage {
     }
 
 
-    public void selectLanguage(UUID uuid, String language) {
-        if(!availableLanguages.containsKey(language)) {
-            if(language.equals("en_US")) {
+    public String selectLanguage(UUID uuid, String language) {
+        if (!isValidLanguageTag(language)) {
+            logger.error(List.of(
+                    "Provided language '" + language + "' is invalid.",
+                    "Expected ISO format like: en_US, de_DE",
+                    "Selecting fallback language: en_US"
+            ));
+            language = "en_US";
+        }
+
+        if (!availableLanguages.containsKey(language)) {
+            if (language.equals("en_US")) {
                 logger.error(List.of(
                         "Could not find the default en_US file.",
                         "This is a critical problem and should be reported",
@@ -180,12 +226,17 @@ public class LegendLanguage {
             }
             logger.error(List.of(
                     "Provided language file " + language + " does not exist.",
-                    "Selecting Fallback language: en_US"
+                    "Selecting fallback language: en_US"
             ));
             language = "en_US";
         }
 
         userLanguage.put(uuid, language);
+        return language;
+    }
+
+    private boolean isValidLanguageTag(String languageTag) {
+        return languageTag != null && LANGUAGE_TAG_PATTERN.matcher(languageTag).matches();
     }
 
 }
