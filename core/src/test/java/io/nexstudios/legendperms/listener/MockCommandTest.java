@@ -25,8 +25,6 @@ import java.util.List;
 @DisplayName("LegendPerms Commands (MockBukkit)")
 public class MockCommandTest {
 
-    private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();
-
     private ServerMock server;
     private LegendPerms plugin;
     private PlayerMock player;
@@ -53,10 +51,6 @@ public class MockCommandTest {
         grant(p, "legendperms.admin");
     }
 
-    private void grantLanguage(PlayerMock p) {
-        grant(p, "legendperms.player.language");
-    }
-
     private void assertNextMessageContains(PlayerMock p, String needle) {
         String msg = p.nextMessage();
         Assertions.assertNotNull(msg, "No message was sent (nextMessage() == null).");
@@ -64,11 +58,6 @@ public class MockCommandTest {
                 msg.contains(needle),
                 () -> "Expected message '" + msg + "' to contain: '" + needle + "'"
         );
-    }
-
-    private static String linePlain(List<Component> lines, int index) {
-        if (lines == null || index < 0 || index >= lines.size()) return "";
-        return PLAIN.serialize(lines.get(index));
     }
 
     // Root / Permission
