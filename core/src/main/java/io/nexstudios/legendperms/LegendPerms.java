@@ -27,7 +27,6 @@ import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.File;
 import java.util.List;
 
 @Getter
@@ -52,7 +51,6 @@ public class LegendPerms extends JavaPlugin {
     private PermissionDAO permsRepository;
 
     private BrigadierRootCommand brigadierRootCommand;
-
 
     @Override
     public void onLoad() {

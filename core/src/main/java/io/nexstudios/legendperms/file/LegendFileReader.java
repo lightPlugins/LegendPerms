@@ -30,7 +30,8 @@ public class LegendFileReader {
      */
     public LegendFileReader(String directoryPath, JavaPlugin plugin) {
         this.plugin = plugin;
-        this.directoryPath = "plugins/" + plugin.getName() + "/" + directoryPath;
+        // this.directoryPath = "plugins/" + plugin.getName() + "/" + directoryPath;
+        this.directoryPath = new File(plugin.getDataFolder(), directoryPath).getPath();
         this.bukkitFileMap = new HashMap<>();
         this.bukkitFiles = new ArrayList<>();
         loadYmlFiles();

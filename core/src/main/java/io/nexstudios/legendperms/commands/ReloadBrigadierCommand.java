@@ -13,7 +13,7 @@ public record ReloadBrigadierCommand(LegendPerms plugin) implements LegendSubCom
         return Commands.literal("reload")
                 .requires(src -> {
                     CommandSender sender = src.getSender();
-                    return sender.hasPermission("legendperms.player.reload");
+                    return sender.hasPermission("legendperms.admin");
                 })
                 .executes(ctx -> {
                     plugin.onReload();
