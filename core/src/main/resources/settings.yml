@@ -10,8 +10,13 @@ logging:
 ########## Chat Settings ##########
 # The language used in the plugin
 # Available languages: en_US, de_DE
-# After change the language here, you have to use /lp reload
+#
+# You can create your own language file and add it to the plugin folder
+#  (just copy the en_US.yml file and rename it to your language)
+# After creating, simple use /lp reload
+# TIPP: Every player can change his language separately with /lp language <name>
 language:
+  # The default language for new players
   current: en_US
 
 ########## Chat Settings ##########
@@ -45,6 +50,11 @@ tablist:
   sort-players-by-ranks: true
 
 ########## Sign Settings ##########
+# You can define unlimited styles
+# Placeholders: <prefix>, <name>, <group>, <prio>
+# trigger: The text on the sign that will trigger the sign change
+# format: The new text on the sign
+# TIPP: Remove any to disable this feature -> signs: [ ]
 signs:
 
   - trigger: '[lp-user]'

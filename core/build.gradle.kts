@@ -57,8 +57,5 @@ tasks {
     shadowJar {
         archiveClassifier.set("")
         archiveBaseName.set("LegendPerms")
-        //destinationDirectory.set(rootProject.layout.buildDirectory.dir("libs"))
-        //relocate("co.aikar.commands", "io.nexstudios.legend.perms.libs.commands")
-        //relocate("co.aikar.locales", "io.nexstudios.legend.perms.libs.locales")
     }
 }
