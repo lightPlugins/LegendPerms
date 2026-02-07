@@ -1,24 +1,21 @@
 package io.nexstudios.legendperms.listener;
 
 import io.nexstudios.legendperms.LegendPerms;
-import io.nexstudios.legendperms.file.LegendFile;
 import io.nexstudios.legendperms.perms.LegendPermissionService;
+import io.nexstudios.legendperms.perms.model.LegendGroup;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import org.bukkit.Location;
-import org.bukkit.block.Block;
 import org.bukkit.block.sign.Side;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.SignChangeEvent;
 
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 public record SignListener(LegendPerms plugin) implements Listener {
 
@@ -27,110 +24,107 @@ public record SignListener(LegendPerms plugin) implements Listener {
 
     @EventHandler
     public void onSignChange(SignChangeEvent event) {
+
         Player player = event.getPlayer();
         Side side = event.getSide();
 
-        String trigger = plugin.getSettingsFile().getString("sign.trigger-text", "[legendperms]");
-        if (trigger == null || trigger.isBlank()) trigger = "[legendperms]";
-        trigger = trigger.trim();
+        if (!player.hasPermission("legendperms.sign")) return;
 
-        boolean containsTrigger = false;
+        List<Map<?, ?>> templates = plugin.getSettingsFile().getConfig().getMapList("signs");
+        if (templates.isEmpty()) return;
+
         List<Component> current = event.lines();
-        // search for the trigger line in every row
-        for (int i = 0; i < Math.min(4, current.size()); i++) {
-            String plain = PLAIN.serialize(current.get(i)).trim();
-            if (plain.equalsIgnoreCase(trigger)) {
-                // trigger line found
-                containsTrigger = true;
-                break;
-            }
+
+        TemplateMatch match = null;
+        for (int row = 0; row < Math.min(4, current.size()); row++) {
+            String plain = PLAIN.serialize(current.get(row)).trim();
+            if (plain.isEmpty()) continue;
+
+            match = matchTemplate(templates, plain);
+            if (match != null) break;
         }
-        if (!containsTrigger) return;
+        if (match == null) return;
 
         LegendPermissionService perms = plugin.getPermissionService();
-        String group = perms.getUserPrimaryGroupName(player.getUniqueId());
-        String prefix = perms.getUserPrimaryPrefix(player.getUniqueId());
-        int prio = perms.getUserPrimaryPriority(player.getUniqueId());
 
-        // replace placeholder for all signs
+        String outName;
+        String outGroup;
+        String outPrefix;
+        int outPrio;
+
+        if (match.type == TemplateType.USER) {
+            outName = player.getName();
+            outGroup = perms.getUserPrimaryGroupName(player.getUniqueId());
+            outPrefix = perms.getUserPrimaryPrefix(player.getUniqueId());
+            outPrio = perms.getUserPrimaryPriority(player.getUniqueId());
+        } else {
+            String groupName = match.capturedName;
+            if (groupName == null || groupName.isBlank()) return;
+
+            LegendGroup g = perms.getGroup(groupName);
+            if (g == null) return;
+
+            outName = groupName;
+            outGroup = g.getName();
+            outPrefix = g.getPrefix();
+            outPrio = g.getPriority();
+        }
+
         TagResolver resolver = TagResolver.resolver(
-                Placeholder.parsed("name", player.getName()),
-                Placeholder.parsed("group", group),
-                Placeholder.parsed("prefix", prefix == null || prefix.isBlank() ? "NoPrefix" : prefix),
-                Placeholder.parsed("prio", String.valueOf(prio))
+                Placeholder.parsed("name", outName),
+                Placeholder.parsed("group", outGroup),
+                Placeholder.parsed("prefix", outPrefix == null || outPrefix.isBlank() ? "NoPrefix" : outPrefix),
+                Placeholder.parsed("prio", String.valueOf(outPrio))
         );
 
-        List<String> format = plugin.getSettingsFile().getStringList("sign.format");
+        List<String> format = match.format;
         for (int i = 0; i < 4; i++) {
             String raw = (format != null && i < format.size() && format.get(i) != null) ? format.get(i) : "";
-            Component componentLine = MM.deserialize(raw, resolver);
-            event.lines().set(i, componentLine);
+            event.lines().set(i, MM.deserialize(raw, resolver));
         }
 
-        // just for demonstration purposes (simple config saver)
-        saveSign(event.getBlock(), side, player.getName(), group, prefix, prio);
+        // TODO: save signs into signs.yml
     }
 
-    private void saveSign(Block block, Side side, String playerName, String group, String prefix, int prio) {
-        LegendFile storage = plugin.getSignStorage();
+    private TemplateMatch matchTemplate(List<Map<?, ?>> templates, String plainLine) {
 
-        Location location = block.getLocation();
-        String id = findExistingIdByLocationAndSide(storage, location, side);
-        if (id == null) {
-            id = String.valueOf(nextId(storage));
-        }
+        for (Map<?, ?> raw : templates) {
+            if (raw == null) continue;
 
-        String basePath = "signs." + id;
+            Object triggerObj = raw.get("trigger");
+            String trigger = triggerObj != null ? String.valueOf(triggerObj).trim() : null;
+            if (trigger == null || trigger.isBlank()) continue;
 
-        storage.set(basePath + ".location", location);
-        storage.set(basePath + ".side", side.name());
+            @SuppressWarnings("unchecked")
+            List<String> format = (List<String>) raw.get("format");
 
-        storage.set(basePath + ".player", playerName);
-        storage.set(basePath + ".group", group);
-        storage.set(basePath + ".prefix", prefix == null ? "" : prefix);
-        storage.set(basePath + ".priority", prio);
-    }
-
-    private String findExistingIdByLocationAndSide(LegendFile storage, Location loc, Side side) {
-        ConfigurationSection signs = storage.getConfig().getConfigurationSection("signs");
-        if (signs == null) return null;
-
-        Set<String> keys = signs.getKeys(false);
-        for (String key : keys) {
-            String base = "signs." + key;
-
-            Object rawLoc = storage.getConfig().get(base + ".location");
-            if (!(rawLoc instanceof Location storedLoc)) continue;
-
-            String storedSide = storage.getConfig().getString(base + ".side", "");
-            if (!side.name().equalsIgnoreCase(storedSide)) continue;
-
-            if (sameBlock(storedLoc, loc)) {
-                return key;
+            if (!trigger.contains("<name>")) {
+                if (plainLine.equalsIgnoreCase(trigger)) {
+                    return new TemplateMatch(TemplateType.USER, trigger, null, format);
+                }
+                continue;
             }
+
+            String[] parts = trigger.split("<name>", -1);
+            String prefix = parts.length > 0 ? parts[0] : "";
+            String suffix = parts.length > 1 ? parts[1] : "";
+
+            if (!plainLine.regionMatches(true, 0, prefix, 0, prefix.length())) continue;
+            if (!plainLine.toLowerCase().endsWith(suffix.toLowerCase())) continue;
+
+            String captured = plainLine.substring(prefix.length(), plainLine.length() - suffix.length()).trim();
+            if (captured.isEmpty()) continue;
+
+            return new TemplateMatch(TemplateType.GROUP, trigger, captured, format);
         }
         return null;
     }
 
-    private boolean sameBlock(Location locationOne, Location compareLocation) {
-        if (locationOne == null || compareLocation == null) return false;
-        if (locationOne.getWorld() == null || compareLocation.getWorld() == null) return false;
-        if (!locationOne.getWorld().getName().equals(compareLocation.getWorld().getName())) return false;
-        return locationOne.getBlockX() == compareLocation.getBlockX()
-                && locationOne.getBlockY() == compareLocation.getBlockY()
-                && locationOne.getBlockZ() == compareLocation.getBlockZ();
+    private enum TemplateType {
+        USER,
+        GROUP
     }
 
-    private int nextId(LegendFile storage) {
-        ConfigurationSection signs = storage.getConfig().getConfigurationSection("signs");
-        if (signs == null) return 0;
-
-        int max = -1;
-        for (String key : signs.getKeys(false)) {
-            try {
-                max = Math.max(max, Integer.parseInt(key));
-            } catch (NumberFormatException ignored) { }
-        }
-        return max + 1;
+    private record TemplateMatch(TemplateType type, String trigger, String capturedName, List<String> format) {
     }
 }
