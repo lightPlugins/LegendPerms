@@ -80,7 +80,7 @@ public record SignListener(LegendPerms plugin) implements Listener {
         List<String> format = match.format;
         for (int i = 0; i < 4; i++) {
             String raw = (format != null && i < format.size() && format.get(i) != null) ? format.get(i) : "";
-            event.lines().set(i, MM.deserialize(raw, resolver));
+            event.line(i, MM.deserialize(raw, resolver));
         }
 
         // TODO: save signs into signs.yml
