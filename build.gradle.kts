@@ -2,7 +2,7 @@ plugins {
     id("java")
 }
 
-group = "io.nexstudios.legend.perms"
+group = "io.nexstudios.legendperms"
 version = "1.0-SNAPSHOT"
 
 repositories {

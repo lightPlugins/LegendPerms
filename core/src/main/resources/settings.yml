@@ -44,6 +44,17 @@ tablist:
   name-format: <prefix> <white><name>
   sort-players-by-ranks: true
 
+########## Sign Settings ##########
+sign:
+  # The line that triggers the sign action
+  enable: true
+  trigger-text: '[legendperms]'
+  format:
+    - '<blue><bold>LegendPerms'
+    - '<gray><name>'
+    - '<gray><group> <dark_gray>(<gray><prio><dark_gray>)'
+    - '<gray><prefix>'
+
 storage:
   # possible values:
   # - sqlite -> using SQLite (recommended for most users) (single server setup)

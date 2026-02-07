@@ -2,6 +2,25 @@ package io.nexstudios.legendperms.database.model;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
+/**
+ * Represents the configuration properties for a database connection, typically used
+ * in connection pooling frameworks such as HikariCP.
+ * This class encapsulates various timeout values, pool size parameters, and
+ * connection-related settings.
+ *
+ * @param idleTimeout The maximum amount of time a connection can remain idle in the pool
+ *                    before being eligible for eviction, in milliseconds.
+ * @param maxLifetime The maximum lifetime of a connection in the pool, in milliseconds.
+ * @param connectionTimeout The maximum number of milliseconds the pool will wait for a connection to be available
+ *                          before throwing an exception.
+ * @param leakDetectionThreshold The amount of time, in milliseconds, a connection is allowed to remain open without
+ *                               being returned to the pool before it is considered a leak.
+ * @param keepAliveTime The interval, in milliseconds, for periodic keep-alive activity to maintain valid connections.
+ * @param minimumIdle The minimum number of idle connections maintained in the pool at all times.
+ * @param maximumPoolSize The maximum number of connections allowed in the pool.
+ * @param testQuery The SQL query used to test the validity of a connection, if configured.
+ * @param characterEncoding The character encoding used for the database connection.
+ */
 public record ConnectionProperties(long idleTimeout,
                                    long maxLifetime,
                                    long connectionTimeout,

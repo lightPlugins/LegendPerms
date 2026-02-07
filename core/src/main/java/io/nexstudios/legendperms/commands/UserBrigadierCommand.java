@@ -33,27 +33,45 @@ public record UserBrigadierCommand(LegendPerms plugin) implements LegendSubComma
                     CommandSender sender = src.getSender();
                     return sender.hasPermission("legendperms.admin");
                 })
-                .then(Commands.argument("username", StringArgumentType.word())
-                        .suggests(this::suggestOnlinePlayers)
-                        .then(Commands.literal("info")
+                .then(Commands.literal("info")
+                        .then(Commands.argument("username", StringArgumentType.word())
+                                .suggests(this::suggestOnlinePlayers)
                                 .executes(this::showUserInfo)
                         )
-                        .then(Commands.literal("group")
-                                .then(Commands.literal("add")
+                )
+                .then(Commands.literal("help")
+                        .requires(src -> {
+                            CommandSender sender = src.getSender();
+                            return sender.hasPermission("legendperms.admin");
+                        })
+                        .executes(ctx -> {
+                            plugin.getMessageSender().sendChatMessage(
+                                    ctx.getSource().getSender(),
+                                    "permission.user-help-command",
+                                    false,
+                                    null
+                            );
+                            return 1;
+                        }))
+                .then(Commands.literal("group")
+                        .then(Commands.literal("add")
+                                .then(Commands.argument("username", StringArgumentType.word())
+                                        .suggests(this::suggestOnlinePlayers)
                                         .then(Commands.argument("groupName", StringArgumentType.word())
                                                 .suggests(this::suggestGroups)
-                                                // permanent
                                                 .then(Commands.literal("permanent")
                                                         .executes(this::addPermanent)
                                                 )
-                                                // time (5s/10m/2h/7d)
                                                 .then(Commands.argument("time", StringArgumentType.word())
                                                         .suggests(this::suggestDurations)
                                                         .executes(this::addTemporary)
                                                 )
                                         )
                                 )
-                                .then(Commands.literal("remove")
+                        )
+                        .then(Commands.literal("remove")
+                                .then(Commands.argument("username", StringArgumentType.word())
+                                        .suggests(this::suggestOnlinePlayers)
                                         .then(Commands.argument("groupName", StringArgumentType.word())
                                                 .suggests(this::suggestGroups)
                                                 .executes(this::removeGroup)

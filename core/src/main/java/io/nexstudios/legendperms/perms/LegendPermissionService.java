@@ -21,6 +21,18 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Service class responsible for managing and applying permissions, groups, and related functionalities
+ * in the LegendPerms system. This class serves as a central interface for user and group management,
+ * permission resolutions, and persistence mechanisms.
+ * <p>
+ * The service provides methods to create, delete, and modify groups, manage user memberships in groups,
+ * resolve effective permissions, handle temporary group expirations, and rebuild user states.
+ * Additionally, it integrates with an underlying storage mechanism for persisting data.
+ * <p>
+ * This class implements {@link PermissionResolver}
+ * to provide permission resolution functionality.
+ */
 public final class LegendPermissionService implements PermissionResolver {
 
     public static final String DEFAULT_GROUP_NAME = "Default";
@@ -48,7 +60,7 @@ public final class LegendPermissionService implements PermissionResolver {
      * in the system's group collection. If the default group is not already present, it is created
      * and added to the {@code groups} map. This process guarantees the availability of a default group
      * to serve as a fallback or baseline for functionality relying on group definitions.
-     *
+     * <p>
      * If a repository is configured, the method attempts to insert the default group into the
      * underlying database asynchronously. However, if the group already exists, the operation
      * does not overwrite the existing database entry to preserve its current settings.
@@ -80,6 +92,30 @@ public final class LegendPermissionService implements PermissionResolver {
         Bukkit.getOnlinePlayers().forEach(p -> rebuildUser(p.getUniqueId()));
     }
 
+    /**
+     * Loads all group and group permission data from the storage system into memory. This method
+     * initializes the data structures with the records retrieved from the repository and processes
+     * each group and its associated permissions to ensure the in-memory state reflects the latest
+     * stored data.
+     * <p>
+     * The method operates in several steps:
+     * <p>1. Begins a bulk load operation to manage the in-memory data update.
+     * <p>2. Retrieves all groups and their metadata (e.g., name, priority, prefix) from the storage system.
+     * <p>3. Updates or creates in-memory `LegendGroup` objects based on the retrieved group metadata.
+     * <p>4. Retrieves all permissions for each group from the storage system.
+     * <p>5. Populates the permissions of respective in-memory `LegendGroup` objects.
+     * <p>6. Ensures that the default group is defined in the system.
+     * <p>7. Finalizes the bulk load and rebuilds the online state to reflect changes.
+     * <p>
+     * If the repository is not configured or available, the method returns without performing any operations.
+     * <p>
+     * This method interacts with the following:
+     * <p>- The repository to load group and permission metadata.
+     * <p>- The `groups` in-memory collection to store and update `LegendGroup` objects.
+     * <p>
+     * Exceptions during the load operations are managed internally to ensure that the bulk load
+     * concludes properly and resources are released consistently.
+     */
     public void loadAllFromStorage() {
         if (repository == null) return;
 
@@ -115,6 +151,17 @@ public final class LegendPermissionService implements PermissionResolver {
         }
     }
 
+    /**
+     * Asynchronously loads user data from a storage repository and updates internal state.
+     * This method ensures that the user's groups (both permanent and temporary) are loaded from
+     * the storage and the user's offline cache is rebuilt.
+     * If the repository is not available, the method assigns the default group and rebuilds the cache directly.
+     *
+     * @param uuid The unique identifier of the user whose data is to be loaded. Must not be null.
+     * @return A CompletableFuture that completes once the user loading operation has finished.
+     *         The CompletableFuture’s result is {@code null}, and any exceptions during the loading process
+     *         will also be propagated through this future.
+     */
     public CompletableFuture<Void> loadUserFromStorageAsync(UUID uuid) {
         if (uuid == null) return CompletableFuture.completedFuture(null);
 
@@ -181,6 +228,7 @@ public final class LegendPermissionService implements PermissionResolver {
                 });
     }
 
+    // creates a new group with the given name
     public boolean createGroup(String name) {
         if (name == null || name.isBlank()) return false;
         boolean created = groups.putIfAbsent(name, new LegendGroup(name)) == null;
@@ -195,6 +243,14 @@ public final class LegendPermissionService implements PermissionResolver {
         return created;
     }
 
+    /**
+     * Updates the priority of a specific group and synchronizes the change with the repository, if available.
+     * This method modifies the priority of an existing group, persists the change to the underlying database,
+     * and triggers a rebuild of all user configurations associated with the group.
+     *
+     * @param groupName the name of the group whose priority is to be updated; must not be null
+     * @param priority the new priority value to assign to the group
+     */
     public void setGroupPriority(String groupName, int priority) {
         LegendGroup legendGroup = requireGroup(groupName);
         legendGroup.setPriority(priority);
@@ -210,6 +266,17 @@ public final class LegendPermissionService implements PermissionResolver {
         rebuildAllUsersWithGroup(groupName);
     }
 
+    /**
+     * Deletes a group by its name and updates the associated users and repository.
+     * <p>
+     * This method removes the specified group from the internal group storage
+     * and ensures that all users associated with the group are updated accordingly.
+     * It also handles repository updates if a repository is configured.
+     * The default group cannot be deleted.
+     *
+     * @param name the name of the group to be deleted. Must not be null or empty.
+     * @return true if the group was successfully deleted, false otherwise.
+     */
     public boolean deleteGroup(String name) {
         if (name == null || name.isBlank()) return false;
 
@@ -305,6 +372,13 @@ public final class LegendPermissionService implements PermissionResolver {
         return true;
     }
 
+    /**
+     * Ensures that the user associated with the given UUID has the default group assigned.
+     * If the user does not belong to any group or temporary group, the default group is added to their group list.
+     * Additionally, it updates the database repository if applicable.
+     *
+     * @param uuid the unique identifier of the user whose groups are being checked and potentially updated
+     */
     public void ensureUserHasDefaultGroup(UUID uuid) {
         LegendUser legendUser = users.computeIfAbsent(uuid, LegendUser::new);
         if (legendUser.getGroups().isEmpty() && legendUser.getTemporaryGroups().isEmpty()) {
@@ -321,6 +395,16 @@ public final class LegendPermissionService implements PermissionResolver {
         }
     }
 
+    /**
+     * Retrieves the expiration date for a temporary group associated with a user.
+     * If the user's temporary group has already expired, their temporary groups
+     * are purged and rebuilt if necessary. If no expiration exists, returns "never".
+     *
+     * @param uuid the unique identifier of the user
+     * @param groupName the name of the temporary group
+     * @return a formatted string representing the expiration date, or "never"
+     *         if no expiration date exists or the input is invalid
+     */
     public String getTemporaryGroupExpiration(UUID uuid, String groupName) {
         if (uuid == null || groupName == null || groupName.isBlank()) return "never";
 
@@ -336,6 +420,17 @@ public final class LegendPermissionService implements PermissionResolver {
         return EXPIRATION_FORMATTER.format(expiresAt);
     }
 
+    /**
+     * Adds a user to a specified group. This method ensures the user exists
+     * and purges their expired temporary groups before adding the new group.
+     * If the group is successfully added, optional operations such as
+     * rebuilding the user and updating the repository will be triggered.
+     *
+     * @param uuid      the unique identifier of the user
+     * @param groupName the name of the group to add the user to
+     * @return true if the group was successfully added, false if the user was
+     *         already a member of the group
+     */
     public boolean userAddGroup(UUID uuid, String groupName) {
         requireGroup(groupName);
         LegendUser user = users.computeIfAbsent(uuid, LegendUser::new);
@@ -356,6 +451,16 @@ public final class LegendPermissionService implements PermissionResolver {
         return changed;
     }
 
+    /**
+     * Removes a user from a specified group. This method checks for both permanent and temporary
+     * group memberships and removes the user from the group accordingly. If the user belongs
+     * only to the default group after removal, the method ensures that the default group is maintained.
+     *
+     * @param uuid      The unique identifier of the user. Cannot be null.
+     * @param groupName The name of the group to remove the user from. Cannot be null or blank.
+     * @return true if the user was successfully removed from the specified group or temporary groups,
+     *         false otherwise.
+     */
     public boolean userRemoveGroup(UUID uuid, String groupName) {
         if (uuid == null || groupName == null || groupName.isBlank()) return false;
 
@@ -475,6 +580,19 @@ public final class LegendPermissionService implements PermissionResolver {
         }
     }
 
+    /**
+     * Assigns a user to a temporary group for a specified duration.
+     * If the group assignment already exists for the user but with a different duration,
+     * it will be updated. Temporary groups for the user that have expired will also
+     * be purged before assigning the new group.
+     *
+     * @param uuid       The unique identifier of the user.
+     * @param groupName  The name of the group to add the user to temporarily.
+     * @param duration   The duration for the group membership. Must be a positive non-zero value.
+     *                   If null, zero, or negative, an IllegalArgumentException is thrown.
+     *
+     * @throws IllegalArgumentException if the specified duration is null, zero, or negative.
+     */
     public void userAddTemporaryGroup(UUID uuid, String groupName, Duration duration) {
         requireGroup(groupName);
         if (duration == null || duration.isZero() || duration.isNegative()) {
@@ -530,6 +648,14 @@ public final class LegendPermissionService implements PermissionResolver {
         return user.getTemporaryGroups().keySet().stream().anyMatch(g -> g.equalsIgnoreCase(groupName));
     }
 
+    /**
+     * Removes a user from a specified temporary group. If the removal results in the user having no
+     * groups or temporary groups, the default group is added to ensure the user remains in at least one group.
+     * This method rebuilds the user's data if necessary and updates the repository accordingly.
+     *
+     * @param uuid      The unique identifier of the user.
+     * @param groupName The name of the temporary group to be removed from the user.
+     */
     public void userRemoveTemporaryGroup(UUID uuid, String groupName) {
         LegendUser user = users.computeIfAbsent(uuid, LegendUser::new);
         purgeExpiredTemporaryGroups(user);
@@ -612,11 +738,12 @@ public final class LegendPermissionService implements PermissionResolver {
     }
 
     /**
-     * Rebuilds the state of a user's permissions, groups, and other related configurations.
-     * Ensures the user has necessary default settings, resolves and merges permissions,
-     * refreshes in-game components such as the tablist and commands, and purges expired temporary groups.
+     * Rebuilds the user's permissions, group associations, and other related data structures
+     * based on the specified UUID. This method handles tasks such as purging expired temporary groups,
+     * resolving group priorities, updating effective permissions, and refreshing various
+     * game-related elements like commands, tablist display, and more.
      *
-     * @param uuid the UUID of the user for whom the state is to be rebuilt
+     * @param uuid the unique identifier of the user whose data is to be rebuilt
      */
     public void rebuildUser(UUID uuid) {
         LegendUser legendUser = users.computeIfAbsent(uuid, LegendUser::new);

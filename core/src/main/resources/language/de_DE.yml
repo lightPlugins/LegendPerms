@@ -39,6 +39,18 @@ permission:
     - '  <blue>/lp group edit permission remove <gray><group> <gray><node>'
     - ' '
 
+  group-help-command:
+    - '  <gray>---[<blue>LegendPerms Hilfe-Befehl<gray>]---'
+    - ' '
+    - '  <blue>/lp group <dark_gray>[<gray>Gruppenname<dark_gray>] <blue>info <dark_gray>- <gray>Zeigt Informationen über eine Gruppe an.'
+    - '  <blue>/lp group create <dark_gray>[<gray>Gruppenname<dark_gray>] <dark_gray>- <gray>Erstellt eine Gruppe.'
+    - '  <blue>/lp group edit <dark_gray>[<gray>Gruppenname<dark_gray>] <blue>prefix set [Prefix] <dark_gray>- <gray>Setzt den Prefix einer Gruppe.'
+    - '  <blue>/lp group edit <dark_gray>[<gray>Gruppenname<dark_gray>] <blue>prefix remove <dark_gray>- <gray>Entfernt den Prefix einer Gruppe.'
+    - '  <blue>/lp group edit <dark_gray>[<gray>Gruppenname<dark_gray>] <blue>permission add <dark_gray>[<gray>allow|deny<dark_gray>] <dark_gray>[<gray>Berechtigung<dark_gray>] <dark_gray>- <gray>Fügt einer Gruppe eine Berechtigung hinzu.'
+    - '  <blue>/lp group edit <dark_gray>[<gray>Gruppenname<dark_gray>] <blue>permission remove <dark_gray>[<gray>Berechtigung<dark_gray>] <dark_gray>- <gray>Entfernt eine Berechtigung aus einer Gruppe.'
+    - '  <blue>/lp group edit <dark_gray>[<gray>Gruppenname<dark_gray>] <blue>priority set <dark_gray>[<gray>Priorität<dark_gray>] <dark_gray>- <gray>Setzt die Priorität einer Gruppe.'
+    - ' '
+
   user-group-added: '<gray><blue><player> <gray>wurde erfolgreich zur Gruppe <blue><group> <gray>hinzugefügt. <gray><temporary> <gray>(läuft ab: <blue><expiration>)>'
   user-group-already-added: '<red><player> ist bereits in der Gruppe <blue><group>.'
   user-group-removed: '<gray><blue><player> <gray>wurde erfolgreich aus der Gruppe <blue><group> <gray>entfernt.'
@@ -59,3 +71,11 @@ permission:
     - ' '
     - '  <gray>Untergruppen:'
     - '  <gray>- <dark_gray>#subgroups#'
+
+  user-help-command:
+    - '  <gray>---[<blue>LegendPerms Hilfe-Befehl<gray>]---'
+    - ' '
+    - '  <blue>/lp user info <dark_gray>[<gray>Benutzername<dark_gray>] <dark_gray>- <gray>Zeigt Informationen über einen Benutzer an.'
+    - '  <blue>/lp user group add <dark_gray>[<gray>Benutzername<dark_gray>] <dark_gray>[<gray>Gruppenname<dark_gray>] <dark_gray>[<gray>5m,permanent<dark_gray>] <dark_gray>- <gray>Fügt einen Benutzer einer Gruppe hinzu.'
+    - '  <blue>/lp user group remove <dark_gray>[<gray>Benutzername<dark_gray>] <dark_gray>[<gray>Gruppenname<dark_gray>] <dark_gray>- <gray>Entfernt einen Benutzer aus einer Gruppe.'
+    - ' '

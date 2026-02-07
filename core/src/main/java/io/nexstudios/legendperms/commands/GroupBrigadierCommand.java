@@ -31,6 +31,20 @@ public record GroupBrigadierCommand(LegendPerms plugin) implements LegendSubComm
                     CommandSender sender = src.getSender();
                     return sender.hasPermission("legendperms.admin");
                 })
+                .then(Commands.literal("help")
+                        .requires(src -> {
+                            CommandSender sender = src.getSender();
+                            return sender.hasPermission("legendperms.admin");
+                        })
+                        .executes(ctx -> {
+                            plugin.getMessageSender().sendChatMessage(
+                                    ctx.getSource().getSender(),
+                                    "permission.group-help-command",
+                                    false,
+                                    null
+                            );
+                            return 1;
+                        }))
                 .then(Commands.literal("create")
                         .requires(src -> {
                             CommandSender sender = src.getSender();

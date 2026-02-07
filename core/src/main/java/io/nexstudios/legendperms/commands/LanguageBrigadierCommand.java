@@ -2,11 +2,11 @@ package io.nexstudios.legendperms.commands;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import io.nexstudios.legendperms.LegendPerms;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.command.CommandSender;
@@ -67,7 +67,7 @@ public record LanguageBrigadierCommand(LegendPerms plugin) implements LegendSubC
                 );
     }
 
-    private CompletableFuture<com.mojang.brigadier.suggestion.Suggestions> suggestAvailableLanguages(SuggestionsBuilder builder) {
+    private CompletableFuture<Suggestions> suggestAvailableLanguages(SuggestionsBuilder builder) {
         String remaining = builder.getRemaining();
         String remainingLower = remaining == null ? "" : remaining.toLowerCase();
 

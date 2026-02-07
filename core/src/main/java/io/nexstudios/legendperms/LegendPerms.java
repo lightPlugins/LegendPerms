@@ -4,6 +4,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import io.nexstudios.legendperms.commands.*;
 import io.nexstudios.legendperms.listener.JoinLeaveListener;
 import io.nexstudios.legendperms.listener.PrefixChatListener;
+import io.nexstudios.legendperms.listener.SignListener;
 import io.nexstudios.legendperms.listener.TablistPrefixListener;
 import io.nexstudios.legendperms.database.AbstractDatabase;
 import io.nexstudios.legendperms.database.PooledDatabase;
@@ -39,6 +40,7 @@ public class LegendPerms extends JavaPlugin {
     public LegendMessageSender messageSender;
 
     private LegendFile settingsFile;
+    private LegendFile signStorage;
     private LegendFileReader languageFiles;
 
     private AbstractDatabase abstractDatabase;
@@ -139,6 +141,7 @@ public class LegendPerms extends JavaPlugin {
         this.tablistPrefixListener = new TablistPrefixListener(this);
         Bukkit.getPluginManager().registerEvents(this.tablistPrefixListener, this);
         Bukkit.getPluginManager().registerEvents(new JoinLeaveListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new SignListener(this), this);
     }
 
     private void initPermissionSystem() {
@@ -218,6 +221,7 @@ public class LegendPerms extends JavaPlugin {
 
     private void loadLegendFiles() {
         settingsFile = new LegendFile(this, "settings.yml", legendLogger, true);
+        signStorage = new LegendFile(this, "signs.yml", legendLogger, false);
 
         String configuredDefaultLanguage = settingsFile.getString("language.current", "en_US");
 

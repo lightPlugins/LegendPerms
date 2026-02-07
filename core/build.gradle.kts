@@ -1,13 +1,12 @@
 plugins {
     id("java")
-    kotlin("jvm") version "2.1.0" // Ensure you have the Kotlin plugin applied -> Gradle 9.2.0
     id("io.freefair.lombok") version "8.11"
     id("com.gradleup.shadow") version "9.3.0"
     id("maven-publish")
     id("io.papermc.paperweight.userdev") version "2.0.0-beta.19"
 }
 
-group = "io.nexstudios.legend.perms"
+group = "io.nexstudios.legendperms"
 version = "1.0-SNAPSHOT"
 
 base {
@@ -20,7 +19,6 @@ repositories {
         name = "papermc"
         url = uri("https://repo.papermc.io/repository/maven-public/")
     }
-    maven("https://repo.aikar.co/content/groups/aikar/")
 }
 
 dependencies {
@@ -28,7 +26,6 @@ dependencies {
 
     compileOnly("com.zaxxer:HikariCP:7.0.2")
     compileOnly ("org.mariadb.jdbc:mariadb-java-client:3.5.3")
-    compileOnly("commons-lang:commons-lang:2.6")
 }
 
 java {

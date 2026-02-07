@@ -3,6 +3,10 @@ package io.nexstudios.legendperms.database.impl;
 import com.zaxxer.hikari.HikariConfig;
 import io.nexstudios.legendperms.database.model.ConnectionProperties;
 
+/**
+ * Utility class containing methods for configuring Hikari connection pooling settings
+ * and applying advanced default data source properties for optimal performance.
+ */
 public class ExpertParams {
 
     public static void applyConnectionProperties(HikariConfig hikari, ConnectionProperties connectionProperties) {
